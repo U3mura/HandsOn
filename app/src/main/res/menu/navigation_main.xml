@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/tutoriais"
+        android:icon="@drawable/tutoriais_icon"
+        android:title="Tutoriais"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/salvos"
+        android:icon="@drawable/ic_baseline_star_24"
+        android:title="Salvos"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/faq"
+        android:icon="@drawable/faq"
+        android:title="FAQ"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/perfil"
+        android:icon="@drawable/Perfil"
+        android:title="Perfil"
+        app:showAsAction="always" />
+</menu>
