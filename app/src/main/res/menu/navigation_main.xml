@@ -19,7 +19,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/perfil"
-        android:icon="@drawable/Perfil"
+        android:icon="@drawable/perfil"
         android:title="Perfil"
         app:showAsAction="always" />
 </menu>
