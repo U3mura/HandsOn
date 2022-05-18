@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "810068719533",
+    "project_id": "handson-85d38",
+    "storage_bucket": "handson-85d38.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:810068719533:android:c7937b4b58355f7c4d9324",
+        "android_client_info": {
+          "package_name": "com.example.handson"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "810068719533-f5b3ac0cm81vn2ujsfg7bf0l5hgi5guk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfbIHCJC6wpC8i95ouz_DR8N1fxCdj8V0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "810068719533-f5b3ac0cm81vn2ujsfg7bf0l5hgi5guk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
