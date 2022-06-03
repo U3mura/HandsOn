@@ -2,9 +2,12 @@ package com.example.handson
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.handson.databinding.ActivityMainBinding
+import com.example.handson.fragments.Tutorial
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
@@ -62,6 +65,9 @@ class MainActivity : AppCompatActivity() {
 
             startActivityForResult(i, 1)
         }
+        binding.fab.setOnClickListener(){
+            inserirTut()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -80,12 +86,35 @@ class MainActivity : AppCompatActivity() {
         val usuario = FirebaseAuth.getInstance().currentUser
 
         if(usuario != null){
-
             database = FirebaseDatabase.getInstance()
                 .reference.child(usuario.uid)
-
         }
+    }
 
+    fun inserirTut(){
+        val editText = EditText(this)
+        val editTextDesc = EditText(this)
+
+        editText.hint = "Título do tutorial"
+        editTextDesc.hint = "Descrição do tutorial"
+
+
+        AlertDialog.Builder(this)
+            .setTitle("Inserir título do tutorial")
+            .setView(editText)
+            .setView(editTextDesc)
+
+            .setPositiveButton("Inserir") {dialogInterface, i ->
+                val tutNomeDesc = Tutorial(nome = editText.text.toString(), des = editTextDesc.text.toString())
+                val newNode = database.child("Tutoriais").push()
+
+                tutNomeDesc.id = newNode.key
+                newNode.setValue(tutNomeDesc)
+            }
+
+            .setNegativeButton("Cancelar", null)
+            .create()
+            .show()
     }
 
 }
