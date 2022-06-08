@@ -1,4 +1,4 @@
-package com.example.handson.fragments
+package com.example.handson.model
 
 data class Tutorial(
     var id: String? = null,
