@@ -7,12 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
+import com.example.handson.databinding.CardBinding
 import com.example.handson.databinding.FragmentTutoriaisBinding
 import com.example.handson.databinding.NovoTutorialBinding
 import com.example.handson.model.Tutorial
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
+import java.util.HashMap
 
 class TutoriaisFragment : Fragment() {
 
@@ -36,7 +37,7 @@ class TutoriaisFragment : Fragment() {
         val novoTutorial = NovoTutorialBinding.inflate(layoutInflater)
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Inserir título do tutorial")
+            .setTitle("Insira o título e descrição do tutorial")
             .setView(novoTutorial.root)
 
             .setPositiveButton("Inserir") {_, _ ->
@@ -59,7 +60,45 @@ class TutoriaisFragment : Fragment() {
         if(usuario != null){
             database = FirebaseDatabase.getInstance()
                 .reference.child(usuario.uid)
+
+            val valueEventListener = object: ValueEventListener{
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val list = arrayListOf<Tutorial>()
+                    snapshot.child("Tutoriais").children.forEach {
+                        val map = it.value as HashMap<String, Any>
+
+                        val id = it.key
+                        val nome = map["nome"] as String
+                        val des = map["des"] as String
+
+                        val tutorial = Tutorial(id,nome,des)
+                        list.add(tutorial)
+                    }
+                    refreshUi(list)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    TODO("Not yet implemented")
+                }
+
+            }
+            database.addValueEventListener(valueEventListener)
         }
     }
+
+    fun refreshUi(list: List<Tutorial>){
+        binding.container.removeAllViews()
+
+
+        list.forEach(){
+            val cardBinding = CardBinding.inflate(layoutInflater)
+
+            cardBinding.nome.text = it.nome
+            cardBinding.des.text = it.des
+
+            binding.container.addView(cardBinding.root)
+        }
+    }
+
 
 }
