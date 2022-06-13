@@ -1,12 +1,15 @@
 package com.example.handson
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.allViews
 import com.example.handson.databinding.CardBinding
 import com.example.handson.databinding.FragmentTutoriaisBinding
 import com.example.handson.databinding.NovoTutorialBinding
@@ -29,22 +32,31 @@ class TutoriaisFragment : Fragment() {
          binding.fab3.setOnClickListener(){
              inserirTut()
          }
+
+
+
+
         return binding.root
     }
 
 
     fun inserirTut(){
         val novoTutorial = NovoTutorialBinding.inflate(layoutInflater)
+        val usuario = FirebaseAuth.getInstance().currentUser
 
         AlertDialog.Builder(requireContext())
             .setTitle("Insira o título e descrição do tutorial")
             .setView(novoTutorial.root)
 
             .setPositiveButton("Inserir") {_, _ ->
-                val tutNomeDesc = Tutorial(nome = novoTutorial.editNome.text.toString(), des = novoTutorial.editDesc.text.toString())
+                val tutNomeDesc = Tutorial(nome = novoTutorial.editNome.text.toString(),
+                    des = novoTutorial.editDesc.text.toString(),
+                    idUsuario = usuario.uid)
                 val newNode = database.child("Tutoriais").push()
 
-                tutNomeDesc.id = newNode.key
+                newNode.key?.let{
+                    tutNomeDesc.id = it
+                }
                 newNode.setValue(tutNomeDesc)
             }
 
@@ -53,14 +65,16 @@ class TutoriaisFragment : Fragment() {
             .show()
     }
 
-    fun configurarBase(){
+        fun configurarBase(){
 
         val usuario = FirebaseAuth.getInstance().currentUser
 
         if(usuario != null){
             database = FirebaseDatabase.getInstance()
-                .reference.child(usuario.uid)
+                .reference
 
+            //verificando se teve alguém(alguma função) que alterou algum valor na base e caso tenha sido alterado
+            //ele cria uma lista com os novos valores(editados,excluido ou inseridos)
             val valueEventListener = object: ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val list = arrayListOf<Tutorial>()
@@ -70,15 +84,24 @@ class TutoriaisFragment : Fragment() {
                         val id = it.key
                         val nome = map["nome"] as String
                         val des = map["des"] as String
+                        val salvo = map["salvo"] as Boolean
+                        val idUsuario = map["idUsuario"] as String
 
-                        val tutorial = Tutorial(id,nome,des)
+                        val tutorial = Tutorial(id,nome,des,salvo,idUsuario)
                         list.add(tutorial)
                     }
                     refreshUi(list)
                 }
 
+
                 override fun onCancelled(error: DatabaseError) {
-                    TODO("Not yet implemented")
+                    Toast.makeText(
+                        requireContext(),
+                        "Não foi possivel acessar o servidor",
+                        Toast.LENGTH_LONG)
+                        .show()
+
+                    Log.e("TutoriaisFragment", "onCancelled", error.toException())
                 }
 
             }
@@ -86,6 +109,7 @@ class TutoriaisFragment : Fragment() {
         }
     }
 
+    //para atualizar todos os cards, quando tem mudança na base
     fun refreshUi(list: List<Tutorial>){
         binding.container.removeAllViews()
 
@@ -95,9 +119,20 @@ class TutoriaisFragment : Fragment() {
 
             cardBinding.nome.text = it.nome
             cardBinding.des.text = it.des
+            cardBinding.checkSalvo.isChecked = it.salvo
+
+            cardBinding.checkSalvo.setOnCheckedChangeListener{ checkbox, isChecked ->
+                val noTutorial = it.id?.let { it1 ->
+                    database.child("Tutoriais").child(it1)
+                }
+
+                noTutorial?.child("salvo")?.setValue(isChecked)
+            }
 
             binding.container.addView(cardBinding.root)
         }
+
+
     }
 
 
