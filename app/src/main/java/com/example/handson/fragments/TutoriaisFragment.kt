@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -22,10 +23,12 @@ class TutoriaisFragment : Fragment() {
 
     lateinit var binding : FragmentTutoriaisBinding
     lateinit var database: DatabaseReference
+    val usuario = FirebaseAuth.getInstance().currentUser
 
      override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
         binding = FragmentTutoriaisBinding.inflate(inflater)
+        val cardBinding = CardBinding.inflate(layoutInflater)
 
         configurarBase()
 
@@ -33,7 +36,10 @@ class TutoriaisFragment : Fragment() {
              inserirTut()
          }
 
+         cardBinding.checkSalvo.setOnCheckedChangeListener { checkbox, isChecked ->
 
+
+         }
 
 
         return binding.root
@@ -42,7 +48,7 @@ class TutoriaisFragment : Fragment() {
 
     fun inserirTut(){
         val novoTutorial = NovoTutorialBinding.inflate(layoutInflater)
-        val usuario = FirebaseAuth.getInstance().currentUser
+
 
         AlertDialog.Builder(requireContext())
             .setTitle("Insira o título e descrição do tutorial")
@@ -71,7 +77,7 @@ class TutoriaisFragment : Fragment() {
 
         if(usuario != null){
             database = FirebaseDatabase.getInstance()
-                .reference.child(usuario.uid)
+                .reference
 
             //verificando se teve alguém(alguma função) que alterou algum valor na base e caso tenha sido alterado
             //ele cria uma lista com os novos valores(editados,excluido ou inseridos)
@@ -127,6 +133,12 @@ class TutoriaisFragment : Fragment() {
                 }
 
                 noTutorial?.child("salvo")?.setValue(isChecked)
+
+                if (isChecked){
+                    it.id?.let { it1 ->
+                        database.child(usuario.uid).child(it1).setValue(it) }
+                }
+
             }
 
             binding.container.addView(cardBinding.root)

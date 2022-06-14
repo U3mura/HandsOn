@@ -16,9 +16,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.util.HashMap
 
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
 class SalvosFragment : Fragment() {
     lateinit var binding : FragmentSalvosBinding
     lateinit var database: DatabaseReference
@@ -36,7 +33,7 @@ class SalvosFragment : Fragment() {
 
         if(usuario != null){
             database = FirebaseDatabase.getInstance()
-                .reference.child(usuario.uid)
+                .reference
 
             val valueEventListener = object: ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
