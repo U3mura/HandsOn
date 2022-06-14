@@ -15,6 +15,7 @@ import com.example.handson.databinding.CardBinding
 import com.example.handson.databinding.FragmentTutoriaisBinding
 import com.example.handson.databinding.NovoTutorialBinding
 import com.example.handson.model.Tutorial
+import com.example.handson.model.TutorialSalvo
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import java.util.HashMap
@@ -35,12 +36,6 @@ class TutoriaisFragment : Fragment() {
          binding.fab3.setOnClickListener(){
              inserirTut()
          }
-
-         cardBinding.checkSalvo.setOnCheckedChangeListener { checkbox, isChecked ->
-
-
-         }
-
 
         return binding.root
     }
@@ -83,20 +78,38 @@ class TutoriaisFragment : Fragment() {
             //ele cria uma lista com os novos valores(editados,excluido ou inseridos)
             val valueEventListener = object: ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val list = arrayListOf<Tutorial>()
+                    val listTutorial = arrayListOf<Tutorial>()
+                    val listTutorialSalvo = arrayListOf<TutorialSalvo>()
+
+
                     snapshot.child("Tutoriais").children.forEach {
+
                         val map = it.value as HashMap<String, Any>
 
                         val id = it.key
                         val nome = map["nome"] as String
                         val des = map["des"] as String
-                        val salvo = map["salvo"] as Boolean
                         val idUsuario = map["idUsuario"] as String
 
-                        val tutorial = Tutorial(id,nome,des,salvo,idUsuario)
-                        list.add(tutorial)
+                        val tutorial = Tutorial(id,nome,des,idUsuario)
+                        listTutorial.add(tutorial)
                     }
-                    refreshUi(list)
+
+                    snapshot.child(usuario.uid).children.forEach {
+                        val map = it.value as HashMap<String, Any>
+
+                        listTutorial.forEach{ tutorial ->
+                            if (tutorial.id == it.key){
+                                val id = tutorial.id
+                                val salvo = map["salvo"] as Boolean
+                                val tutorialSalvo = TutorialSalvo(id,tutorial, salvo)
+                                listTutorialSalvo.add(tutorialSalvo)
+                            }
+                        }
+                    }
+
+
+                    refreshUi(listTutorial, listTutorialSalvo)
                 }
 
 
@@ -116,33 +129,36 @@ class TutoriaisFragment : Fragment() {
     }
 
     //para atualizar todos os cards, quando tem mudança na base
-    fun refreshUi(list: List<Tutorial>){
+    fun refreshUi(listTutorial: List<Tutorial>, listTutorialSalvo: List<TutorialSalvo>){
         binding.container.removeAllViews()
 
 
-        list.forEach(){
-            val cardBinding = CardBinding.inflate(layoutInflater)
+        listTutorial.forEach(){
+
+            var cardBinding = CardBinding.inflate(layoutInflater)
 
             cardBinding.nome.text = it.nome
             cardBinding.des.text = it.des
-            cardBinding.checkSalvo.isChecked = it.salvo
+
+            listTutorialSalvo.forEach { tutorialSalvo ->
+                if (tutorialSalvo.id == it.id){
+                    cardBinding.checkSalvo.isChecked = tutorialSalvo.salvo
+                }
+            }
 
             cardBinding.checkSalvo.setOnCheckedChangeListener{ checkbox, isChecked ->
-                val noTutorial = it.id?.let { it1 ->
-                    database.child(usuario.uid).child(it1)
-                }
 
-                //agora está no proprio usuario
-                noTutorial?.child("salvo")?.setValue(isChecked)
 
                 if (isChecked){
-                    it.id?.let { it1 ->
-                        database.child(usuario.uid).child(it1).setValue(it)
-                    }
+                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("salvo").setValue(isChecked) }
+                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("id").setValue(it1) }
+                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("des").setValue(it.des) }
+                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("nome").setValue(it.nome) }
+                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("idUsuario").setValue(it.idUsuario) }
+
                 }else{
-                    it.id?.let { it2 ->
-                        database.child(usuario.uid).child(it2).removeValue()
-                    }
+
+                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).removeValue() }
                 }
 
             }
