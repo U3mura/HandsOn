@@ -129,14 +129,20 @@ class TutoriaisFragment : Fragment() {
 
             cardBinding.checkSalvo.setOnCheckedChangeListener{ checkbox, isChecked ->
                 val noTutorial = it.id?.let { it1 ->
-                    database.child("Tutoriais").child(it1)
+                    database.child(usuario.uid).child(it1)
                 }
 
+                //agora está no proprio usuario
                 noTutorial?.child("salvo")?.setValue(isChecked)
 
                 if (isChecked){
                     it.id?.let { it1 ->
-                        database.child(usuario.uid).child(it1).setValue(it) }
+                        database.child(usuario.uid).child(it1).setValue(it)
+                    }
+                }else{
+                    it.id?.let { it2 ->
+                        database.child(usuario.uid).child(it2).removeValue()
+                    }
                 }
 
             }

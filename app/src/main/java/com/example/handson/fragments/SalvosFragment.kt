@@ -19,7 +19,7 @@ import java.util.HashMap
 class SalvosFragment : Fragment() {
     lateinit var binding : FragmentSalvosBinding
     lateinit var database: DatabaseReference
-
+    val usuario = FirebaseAuth.getInstance().currentUser
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentSalvosBinding.inflate(inflater)
 
@@ -29,7 +29,7 @@ class SalvosFragment : Fragment() {
     }
 
     fun carregarcards(){
-        val usuario = FirebaseAuth.getInstance().currentUser
+
 
         if(usuario != null){
             database = FirebaseDatabase.getInstance()
@@ -84,8 +84,9 @@ class SalvosFragment : Fragment() {
                 cardBinding.checkSalvo.isChecked = it.salvo
 
                 cardBinding.checkSalvo.setOnCheckedChangeListener { checkbox, isChecked ->
+
                     val noTutorial = it.id?.let { it1 ->
-                        database.child("Tutoriais").child(it1)
+                        database.child(usuario.uid).child(it1)
                     }
 
                     noTutorial?.child("salvo")?.setValue(isChecked)
