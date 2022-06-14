@@ -71,7 +71,7 @@ class TutoriaisFragment : Fragment() {
 
         if(usuario != null){
             database = FirebaseDatabase.getInstance()
-                .reference
+                .reference.child(usuario.uid)
 
             //verificando se teve alguém(alguma função) que alterou algum valor na base e caso tenha sido alterado
             //ele cria uma lista com os novos valores(editados,excluido ou inseridos)
