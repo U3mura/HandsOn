@@ -21,6 +21,8 @@ class SalvosFragment : Fragment() {
     lateinit var binding : FragmentSalvosBinding
     lateinit var database: DatabaseReference
     val usuario = FirebaseAuth.getInstance().currentUser
+    lateinit var listener : ValueEventListener
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentSalvosBinding.inflate(inflater)
 
@@ -35,7 +37,7 @@ class SalvosFragment : Fragment() {
             database = FirebaseDatabase.getInstance()
                 .reference
 
-            val valueEventListener = object: ValueEventListener{
+            listener = object: ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val list = arrayListOf<TutorialSalvo>()
                     snapshot.child(usuario.uid).children.forEach {
@@ -68,8 +70,14 @@ class SalvosFragment : Fragment() {
                 }
 
             }
-            database.addValueEventListener(valueEventListener)
+            database.addValueEventListener(listener)
         }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+
+        database.removeEventListener(listener)
     }
 
 
@@ -79,19 +87,19 @@ class SalvosFragment : Fragment() {
 
 
         list.forEach(){
-                val cardBinding = CardBinding.inflate(layoutInflater)
+            val cardBinding = CardBinding.inflate(layoutInflater)
 
-                cardBinding.nome.text = it.tutorial.nome
-                cardBinding.des.text = it.tutorial.des
-                cardBinding.checkSalvo.isChecked = it.salvo
+            cardBinding.nome.text = it.tutorial.nome
+            cardBinding.des.text = it.tutorial.des
+            cardBinding.checkSalvo.isChecked = it.salvo
 
-                cardBinding.checkSalvo.setOnCheckedChangeListener { checkbox, isChecked ->
-                    if (!isChecked){
-                        it.id?.let { it1 -> database.child(usuario.uid).child(it1).removeValue() }
-                    }
+            cardBinding.checkSalvo.setOnCheckedChangeListener { checkbox, isChecked ->
+                if (!isChecked && usuario!= null){
+                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).removeValue() }
                 }
+            }
 
-                binding.container.addView(cardBinding.root)
+            binding.container.addView(cardBinding.root)
         }
     }
 }

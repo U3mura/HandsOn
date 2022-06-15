@@ -6,11 +6,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CompoundButton
-import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.allViews
 import com.example.handson.databinding.CardBinding
 import com.example.handson.databinding.FragmentTutoriaisBinding
 import com.example.handson.databinding.NovoTutorialBinding
@@ -25,34 +22,35 @@ class TutoriaisFragment : Fragment() {
     lateinit var binding : FragmentTutoriaisBinding
     lateinit var database: DatabaseReference
     val usuario = FirebaseAuth.getInstance().currentUser
+    lateinit var inflaterTest: LayoutInflater
+    lateinit var listener: ValueEventListener
 
-     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
-        binding = FragmentTutoriaisBinding.inflate(inflater)
-        val cardBinding = CardBinding.inflate(layoutInflater)
+        inflaterTest = inflater
+        binding = FragmentTutoriaisBinding.inflate(inflaterTest)
 
         configurarBase()
 
-         binding.fab3.setOnClickListener(){
-             inserirTut()
-         }
+        binding.fab3.setOnClickListener(){
+            inserirTut()
+        }
 
         return binding.root
     }
 
 
     fun inserirTut(){
-        val novoTutorial = NovoTutorialBinding.inflate(layoutInflater)
+        val novoTutorial = NovoTutorialBinding.inflate(inflaterTest)
 
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Insira o título e descrição do tutorial")
             .setView(novoTutorial.root)
 
             .setPositiveButton("Inserir") {_, _ ->
                 val tutNomeDesc = Tutorial(nome = novoTutorial.editNome.text.toString(),
                     des = novoTutorial.editDesc.text.toString(),
-                    idUsuario = usuario.uid)
+                    idUsuario = usuario?.uid)
                 val newNode = database.child("Tutoriais").push()
 
                 newNode.key?.let{
@@ -66,7 +64,7 @@ class TutoriaisFragment : Fragment() {
             .show()
     }
 
-        fun configurarBase(){
+    fun configurarBase(){
 
         val usuario = FirebaseAuth.getInstance().currentUser
 
@@ -76,7 +74,7 @@ class TutoriaisFragment : Fragment() {
 
             //verificando se teve alguém(alguma função) que alterou algum valor na base e caso tenha sido alterado
             //ele cria uma lista com os novos valores(editados,excluido ou inseridos)
-            val valueEventListener = object: ValueEventListener{
+            listener = object: ValueEventListener{
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val listTutorial = arrayListOf<Tutorial>()
                     val listTutorialSalvo = arrayListOf<TutorialSalvo>()
@@ -124,8 +122,14 @@ class TutoriaisFragment : Fragment() {
                 }
 
             }
-            database.addValueEventListener(valueEventListener)
+            database.addValueEventListener(listener)
         }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+
+        database.removeEventListener(listener)
     }
 
     //para atualizar todos os cards, quando tem mudança na base
@@ -135,7 +139,7 @@ class TutoriaisFragment : Fragment() {
 
         listTutorial.forEach(){
 
-            var cardBinding = CardBinding.inflate(layoutInflater)
+            var cardBinding = CardBinding.inflate(inflaterTest)
 
             cardBinding.nome.text = it.nome
             cardBinding.des.text = it.des
@@ -149,16 +153,20 @@ class TutoriaisFragment : Fragment() {
             cardBinding.checkSalvo.setOnCheckedChangeListener{ checkbox, isChecked ->
 
 
-                if (isChecked){
-                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("salvo").setValue(isChecked) }
-                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("id").setValue(it1) }
+                if (isChecked && usuario != null){
+                    it.id?.let { it1 ->
+                        database.child(usuario.uid).child(it1).child("salvo").setValue(isChecked)
+                    }
+                    it.id?.let { it1 ->
+                        database.child(usuario.uid).child(it1).child("id").setValue(it1)
+                    }
                     it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("des").setValue(it.des) }
                     it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("nome").setValue(it.nome) }
                     it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("idUsuario").setValue(it.idUsuario) }
 
                 }else{
-
-                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).removeValue() }
+                    if(usuario != null)
+                        it.id?.let { it1 -> database.child(usuario.uid).child(it1).removeValue() }
                 }
 
             }
