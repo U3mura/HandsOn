@@ -8,6 +8,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.example.handson.databinding.ActivityMainBinding
+import com.example.handson.databinding.FragmentLoginBinding
 import com.example.handson.model.Tutorial
 import com.firebase.ui.auth.AuthUI
 import com.google.firebase.auth.FirebaseAuth
@@ -43,10 +44,10 @@ class MainActivity : AppCompatActivity() {
                     val frag = FaqFragment()
                     supportFragmentManager.beginTransaction().replace(R.id.container, frag).commit()
                 }
-//                R.id.perfil -> {
-//                    val frag = SalvosFragment()
-//                    supportFragmentManager.beginTransaction().replace(R.id.container, frag).commit()
-//                }
+                R.id.perfil -> {
+                    val frag = LoginFragment()
+                    supportFragmentManager.beginTransaction().replace(R.id.container, frag).commit()
+                }
 
             }
             true
@@ -56,7 +57,6 @@ class MainActivity : AppCompatActivity() {
     fun tratarLogin(){
         if (FirebaseAuth.getInstance().currentUser != null) {
             Toast.makeText(this, "Entrou", Toast.LENGTH_SHORT).show()
-            configurarBase()
 
             //colocar a tela padrão como a de tutoriais
             supportFragmentManager.beginTransaction().replace(R.id.container, TutoriaisFragment()).commit()
@@ -79,21 +79,8 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == 1 && resultCode == RESULT_OK){
             Toast.makeText(this, "Autenticado", Toast.LENGTH_SHORT).show()
-            configurarBase()
         } else {
             finishAffinity()
         }
     }
-
-    fun configurarBase(){
-
-        val usuario = FirebaseAuth.getInstance().currentUser
-
-        if(usuario != null){
-            database = FirebaseDatabase.getInstance()
-                .reference.child(usuario.uid)
-        }
-    }
-
-
 }

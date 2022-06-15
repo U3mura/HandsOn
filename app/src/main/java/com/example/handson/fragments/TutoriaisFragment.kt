@@ -1,5 +1,6 @@
 package com.example.handson
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.FragmentActivity
 import com.example.handson.databinding.CardBinding
 import com.example.handson.databinding.FragmentTutoriaisBinding
 import com.example.handson.databinding.NovoTutorialBinding
@@ -24,6 +26,11 @@ class TutoriaisFragment : Fragment() {
     val usuario = FirebaseAuth.getInstance().currentUser
     lateinit var inflaterTest: LayoutInflater
     lateinit var listener: ValueEventListener
+    companion object maxSalvos{
+        var valor: Int = 0
+    }
+
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -65,8 +72,6 @@ class TutoriaisFragment : Fragment() {
     }
 
     fun configurarBase(){
-
-        val usuario = FirebaseAuth.getInstance().currentUser
 
         if(usuario != null){
             database = FirebaseDatabase.getInstance()
@@ -136,7 +141,6 @@ class TutoriaisFragment : Fragment() {
     fun refreshUi(listTutorial: List<Tutorial>, listTutorialSalvo: List<TutorialSalvo>){
         binding.container.removeAllViews()
 
-
         listTutorial.forEach(){
 
             var cardBinding = CardBinding.inflate(inflaterTest)
@@ -146,27 +150,30 @@ class TutoriaisFragment : Fragment() {
 
             listTutorialSalvo.forEach { tutorialSalvo ->
                 if (tutorialSalvo.id == it.id){
+                    maxSalvos.valor +=1
                     cardBinding.checkSalvo.isChecked = tutorialSalvo.salvo
+
+                }else{
+                    maxSalvos.valor -=1
                 }
             }
 
             cardBinding.checkSalvo.setOnCheckedChangeListener{ checkbox, isChecked ->
 
-
-                if (isChecked && usuario != null){
-                    it.id?.let { it1 ->
-                        database.child(usuario.uid).child(it1).child("salvo").setValue(isChecked)
-                    }
-                    it.id?.let { it1 ->
-                        database.child(usuario.uid).child(it1).child("id").setValue(it1)
-                    }
+                if (isChecked && usuario != null && maxSalvos.valor <= 3){
+                    maxSalvos.valor +=1
+                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("salvo").setValue(isChecked) }
+                    it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("id").setValue(it1) }
                     it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("des").setValue(it.des) }
                     it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("nome").setValue(it.nome) }
                     it.id?.let { it1 -> database.child(usuario.uid).child(it1).child("idUsuario").setValue(it.idUsuario) }
 
+                    val intent = Intent(requireContext(), AdActivity::class.java)
+                    startActivity(intent)
                 }else{
                     if(usuario != null)
                         it.id?.let { it1 -> database.child(usuario.uid).child(it1).removeValue() }
+                        maxSalvos.valor -=1
                 }
 
             }
