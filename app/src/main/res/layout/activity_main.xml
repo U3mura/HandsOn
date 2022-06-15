@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#fff"
     android:visibility="visible"
     tools:context=".MainActivity">
 
@@ -28,6 +29,7 @@
         android:name="com.example.handson.FaqFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="#ffff"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
